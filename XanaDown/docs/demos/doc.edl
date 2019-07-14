@@ -1,0 +1,11 @@
+# "Wormwood Xanadu System" Edit Decision List
+
+span: body.md,start=0,length=358
+span: tnelson-xanasimp.txt,start=411,length=161
+span: body.md,start=374,length=302
+span: tnelson-xanasimp.txt,start=574,length=340,inline=0
+
+xanalink: hide_new.xanalink
+xanalink: md.xanalink
+xanalink: fork.xanalink
+xanalink: hypertext.xanalink

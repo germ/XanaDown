@@ -1,0 +1,155 @@
+xanasimp-D4
+=== 12.03.12
+
+
+SIMPLEST COMPLETE XANADU&reg; EXPLANATION
+stated very briefly in order to cover the whole process.
+
+
+            Theodor Holm Nelson, founding designer, Project Xanadu
+            Note: "Xanadu" is a registered trademark of Project Xanadu.
+
+
+
+
+Conventional documents simulate paper, contain all their characters in sequence, and are scrambled together with formatting and one-way links.
+
+The xanadoc is a fundamentally different way of making a document: INDIRECTLY, by pointing at content to include and pointing at links to overlay on the content.
+
+This has many advantages, for example--
+
+ - visualization of pages side by side, with connections
+
+ - visible beams to show connective links
+
+ - visible beams to show identities of content (and differences between versions)
+
+ - links that don't break as the document evolves
+
+ - 2-way links, n-way links
+
+ - links with types
+
+and many more.
+
+
+=== TWO LISTS
+
+A xanadoc is represented as two lists: a list of content and a list of overlays.
+
+THE REST IS DETAILS.
+
+Here are the details-- postponing efficiency issues, and dealing only with public documents.
+
+
+=== CONTENT AND OVERLAYS
+
+Content is stabilized, that is, given permanent addresses and the promise of permanent availability.  The content and addresses do not change but are added to.
+
+Overlays (called Xanalinks) are connections between portions of content.  They are stabilized-- given permanent addresses and separately published.
+
+Public xanalinks are published individually and may be re-used by other authors.
+
+
+=== THE PROCESS OF CREATING AND EDITING A XANADOC
+
+New content that you write is stored with permanent addresses.  Nothing is changed or deleted in the pool of permanent content.  A document is revised by changing the list of its content.  If you want to inert a new thought or paragraph, that new content is appended to your permanent content and the edit decision list is changed to put it where you want in the new version.
+
+Content to be quoted from other documents is not "copied" but transcluded.  The stable address of each portion to be quoted is put on the edit decision list.  This retains the connection to its original context.
+
+Through this indirect method, links do not change; a xanalink remains on any part of the content it connects which survives in a new version.
+
+
+=== THE DOCUMENT PARTS
+
+EDL (Edit Decision List): A list of content to be concatenated into a document
+
+XANALINK:  unit representing what connects to what; also used for tagging and formatting.  A xanalink is free-standing and permanently addressable.  It contains no content and has a type.
+
+ODL (Overlay Decision List): A list of stable xanalinks to be applied to the concatenated content, dividing it into visible pages and units, applying formatting, and showing comments, annotations and much more.
+
+
+=== TRANSCLUSION
+
+Several forms of visible transclusion are possible:
+ - any quotation can be shown next to its original context, to see where it came from and what it originally meant (source transclusion)
+ - two xanadocs being read locally show contents which are identical (local transclusion)
+ - the process of re-using is handled by the METHOD of transclusion, re-using contents with their source addresses.
+
+
+=== THE PROCESS OF OPENING A XANADOC
+
+1.  The contents of the EDL are sent for (dereferenced) and concatenated.  This gives us an unbroken sequence of text without markup or links-- which we call the concatext.
+
+
+2.  We apply the stretch-and-break xanalinks from the ODL-- those xanalinks which break the concatext into pages, headings and paragraphs.  This gives us the basic layout of a multipage xanadoc.
+
+(We will discuss only rectangular xanapages here, though there will be other kinds.)
+
+We will refer to each character by its indexed position in the concatext-- its conkindex.  The conkindex of the first character is 0.
+
+
+3.  TYPESETTING.
+
+We will initially use fixed-width characters to simplify typesetting.  We will have only one font, no boldface or italics.
+
+We typeset a textline by laying down its characters until the next word will not fit on the line.  (Often one blank space of the concatext will remain on the line.)  We then pad out the line with spaces which are not part of the concatext and do not figure in the beam calculation.
+
+MAPPING THE PAGES.
+We note the conkindex of the first character on a line and the conkindex of the last significant character on that line, as well as how far along the line it is.
+
+That gives us a map of each page--
+ - the conkindex of the first character of the page
+ - the conkindex of the first and last significant character of each line, from which we can derive the exact screen position of each significant character by its conkindex.
+
+
+4.  LOCAL TRANSCLUSION BEAMS
+
+We find the local transclusions by--
+ - comparing all the source addresses of currently present content, finding any re-use of content between two pages or documents.   (Transclusion xanacrunch.)
+ - finding the conkindexes of the shared contents
+ - using the conkindexes to find the positions of these spans on their corresponding pages
+ - using those conkindexes to position the transclusion beams
+
+Each xanalink may be shown as a colored strap.
+
+
+5.  XANALINK BEAMS
+
+Xanalink beams may show connections between two or more pages.  Each connection xanalink has one or more endsets (or spans of content, similar to the spans of the EDL).
+
+Each xanalink endset is compared to all the addresses of the content, to find where they attach.  (Xanalink xanacrunch.)
+
+Only part of a link endset may actually match the content.  We find the conkindexes of whatever text matches the endset.  That is where we position that arm of the beam.
+
+If a xanalink has more only two ends, we can show it as a colored strap.  If it has more than three ends, we create some other graphic, such as a propellor-like object.
+
+
+6.  MOVING THE XANADOC
+
+If we scroll the document, or move a page around, the position of the beam-end changes.
+
+In principle all the same beams must be recalculated, though there will later be ways to make this more efficient.
+
+
+7.  EDITING A XANADOC
+
+This comes later.  Interfaces for editing can be designed in various ways.  Meanwhile, if we can show a xanadoc edited by hand, that will be wonderful.
+
+The mechanics of an editor will be different from conventional editors, since all operations must work indirectly through the EDL and ODL.  Each operation is likely to split one or more xanapointers into spans to be rearranged or deleted.
+ - insert: new content is instantly permanized and its addresses put in the EDL
+ - rearrange: the concatext is rearranged at the same time the EDL is changed
+ - delete: a span is deleted from the EDL.
+etc.
+
+Transcluding content from a web page:
+1.  The web page is stabilized, i.e. made into a textfile with markup stripped and given a permanent address.
+2.  The address of the portion to be trancscluded is incorporated into the EDL.
+
+Transcluding content from another xanadoc:
+The content is selected and its conkindex positions determined; then we go to the EDL  of the source xanadoc and do a reverse lookup, finding the source addresses of that content, and putting it on the current EDL.
+
+Creating links: the author can select spans and decide which link type he wants.  The link is given an ID and serial number associated with this project and published, then included on the ODL.
+
+
+=30=

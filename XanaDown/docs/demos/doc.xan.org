@@ -1,0 +1,84 @@
+# A XanOrg version of doc.edl
+#+TITLE: Wormwood Xanadu System
+#+AUTHOR: Rob
+#+EMAIL: contact@robkel.ly
+
+* Wormwood & Xanadu
+
+  This project is a [[X!link:society-of-the-spectacle.muse,match=/\* 207\s*(.*?)\n/][fork]] of Ted Nelson's [[http://xanadu.com/][Project Xanadu]], and specifically of the
+  [[http://perma.pub/xanaviewer3/][xanaviewer]] put together by his Cambridge team.
+
+  I've reverse-engineered a primitive Xanadoc server & spruced up both the
+  server and client with a few additions of my own. That's [[X!link:spec.org,match=/which I'm calling \*(Wormwood)\*/][Wormwood]].
+
+  The source code for both the client and viewer can be found on [[https://gitlab.com/krampus/wormwood][gitlab]].
+
+  By the way, click the /layout widget/ in the lower-right-hand-corner of your
+  screen if you'd like to change how these documents are laid out.
+
+** Project Xanadu
+
+  Project Xanadu is a hypertext document system --- in fact, the original
+  hypertext system. The basic form of Xanadu document is the
+  xanadoc. [[X!span:tnelson-xanasimp.txt,match=/The xanadoc is.*?content\./]]
+
+  [[X!span:tnelson-xanasimp.txt,match=/This has many.*?and many more\./,inline=0]]
+
+  "Normal" links --- a.k.a. [[https://www.google.com/search?q=jump+link][jumplinks]] --- are only one way to link one document
+  to another. In a xanadoc, you can link [[X!link:tnelson-HTdefOgl.txt,start=109,length=105][the individual parts of a document]] with
+  a xanalink. You can also grab a piece of another document and pull it in using
+  /transclusion./
+
+*** Format Specification
+
+    The *official* Xanadu format spec is (as of writing) unfixed and
+    unpublished; in Ted's own words:
+
+    [[X!span:xuDemoPage.html,match=/We are.*change./,inline=0]]
+
+    Wormwood's Xanadu format spec has been reverse-engineered from Ted's
+    examples. Any cross-compatibility with the Cambridge spec, or any other
+    Xanadu implementation, should be viewed as a convenient coincidence without
+    pretense of official or unofficial support in the future.
+
+    [[X!link:spec.org,match=/\* (Classic Xanadu)/,inline=1][See the Wormwood spec documentation for more information.]]
+
+** On to Wormwood
+
+   Having watched some of Ted's propaganda, I was positively *hyped* to start
+   reading /and/ writing documents in parallel in the xana-space! But I quickly
+   found his demo viewer somewhat limiting --- not to mention, using a document
+   server from some guy's web page to view my own xanadocs I was creating on my
+   own PC felt more than a little /needy./
+
+   Hence Wormwood! Among the [[X!link:spec.org,match=/\* (Planned Features)/][extended functionality]]:
+
+   - Documents are formatted using [[https://pandoc.org/][pandoc]].
+
+     This means your xanadocs can use markdown, org-mode, HTML, and any other
+     pandoc-supported format --- you can even [[X!link:warranty.md,match=/([^\n]+)\n$/][mix-and-match via transclusion]]!
+
+   - A brand-new open-source xanadoc server from scratch.
+
+     Here's a nifty feature: you can pass a URL pointing to an EDL or XanOrg doc
+     via CGI parameters. In other words, you can [[/cgi-bin/view.cgi?url=/docs/demo/doc.xan.org][link directly to xanadocs]]
+     so your whole crew can fly thru xana-space, too.
+
+   - A new structured Xanadoc markup format. I call it [[X!link:spec.org,match=/\* (XanOrg)/][XanOrg]].
+
+     XanOrg is a [[X!span:spec.org,match=/A (very new idea.*?)\n\n/]]
+
+   - The souped-up /xanaviewer/, which you are presumably using right this very
+     moment.
+
+     You can change the document layout tiling strategy by clicking the widget
+     in the lower right-hand corner of the window. Notifications and errors are
+     shown in the lower left-hand corner.
+
+     - Using the [[X!link:/static/client/tile.strategies.html,match=/Stack strategy/][stack]] strategy, your xanadoc is placed on the left and
+       sourcedocs are /stacked/ on the right. You can reorganize sourcedocs by
+       dragging them, and the divider gap can be resized and moved much the
+       same.
+
+     - Using the [[X!link:/static/client/tile.strategies.html,match=/Float strategy/][float]] strategy, all documents can be moved and resized however
+       you like by dragging the document's title bar and edges, respectively.

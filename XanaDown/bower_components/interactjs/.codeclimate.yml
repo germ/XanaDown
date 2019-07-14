@@ -1,0 +1,22 @@
+plugins:
+  eslint:
+    enabled: true
+    channel: eslint-5
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - javascript
+        - typescript
+
+ratings:
+  paths:
+    - "packages/**/*.ts"
+
+exclude_paths:
+  - "**/examples/"
+  - "**/build/"
+  - "**/docs/"
+  - "**/_*"
+  - "**/*.spec.ts"
+  - "**/*.d.ts"

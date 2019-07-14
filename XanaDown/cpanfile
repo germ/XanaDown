@@ -1,0 +1,14 @@
+requires 'CGI';
+requires 'CGI::Carp';
+requires 'Data::Dumper';
+requires 'DBIx::Class';
+requires 'DBIx::Class::Schema::Loader';
+requires 'HTML::Scrubber';
+requires 'JSON::PP';
+requires 'LWP::Simple';
+requires 'Pandoc';
+requires 'Parser::MGC';
+requires 'Sanitize';
+requires 'Switch';
+requires 'Test::More';
+requires 'URI::URL';

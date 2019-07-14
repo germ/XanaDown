@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" class="index">
+  <head>
+    <meta charset="utf-8">
+    <title>Wormwood Xanadoer</title>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/style.css">
+  </head>
+  <body class="index">
+    <div class="container">
+      <h2>Wormwood Xanadoer</h2>
+      <p>The Wormwood Xanadoer (and associated systems) are a fork of <a href="http://perma.pub/xanaviewer3/">xanaviewer3</a> by Ted Nelson and his team at Cambridge. <a href="cgi-bin/view.cgi?url=../docs/demos/doc.xan.org">Learn more about Wormwood & Xanadu.</a> </p>
+      <div class="table-responsive">
+        <table class="table">
+          <tr>
+            <td class="text-left form-group">
+              <p class="form-text text-muted">
+                If you have the URL of a xanadoc Edit Decision List (EDL), enter it here to compile the document.
+                You'll be taken to a viewer page with a permanent URL for your document.
+              </p>
+              <form action="cgi-bin/view.cgi">
+                <input class="form-control" type="text" name="url" placeholder="Xanadoc EDL URL">
+                <input class="btn btn-primary" type="submit" value="Fulfill">
+              </form>
+            </td>
+            <td></td>
+            <td class="form-group">
+              <p class="form-text text-muted">
+                Alternatively, you may edit and compile your own EDL here.
+                See <a href="cgi-bin/view.cgi?url=../docs/demos/faq.xan.org">this document</a> for more information on how to write a xanadoc EDL.
+              </p>
+              <form action="cgi-bin/view.cgi">
+                <textarea class="form-control" name="edl" rows="10" cols="60" placeholder="# Edit a xanadoc EDL here."></textarea>
+                <input class="btn btn-primary" type="submit" value="Fulfill">
+              </form>
+            </td>
+          </tr>
+        </table>
+        <p>Furthermore, Wormwood supports Cambridge's dynamic xanadoc editor, which may be found <a href="editor.html">here</a>.
+      </div>
+    </div>
+  </body>
+</html>

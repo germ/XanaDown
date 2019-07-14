@@ -1,0 +1,449 @@
+#+TITLE: Wormwood format specification
+#+AUTHOR: Rob
+#+EMAIL: contact@robkel.ly
+
+* Wormwood format specification
+
+This document serves as a format specification for a hypertext system based on
+Project Xanadu and the work of Ted Nelson. I'm distinguishing my IP from Ted's
+and Xanadu's to make it clear that this work does not in any way represent
+Xanadu, but my goal for this project is the creation of a usable clone of the
+existing [[http://perma.pub/xanaviewer3/][Cambridge xanaviewer]] and Xanadu EDL server. The *official* Xanadu format
+spec is (as of writing) unfixed and unpublished; in Ted's own words:
+
+#+BEGIN_QUOTE
+WHY AREN'T WE PUBLISHING THE SPECS?
+We are not currently providing details of our formats, which are still under
+development and will be undergoing review for some time.  There will be many
+types of xanalink, and we want to carefully trim and select the initial list.
+However, you may go by our examples.  We will endeavor to keep them valid even
+if the formats change.
+#+END_QUOTE
+
+(GEE, it sure would be NICE to TRANSCLUDE that quote, HUH?)
+
+With that in mind, we'll formalize our own Xanadu document and EDL specification
+which I'm calling *Wormwood*, a reference to absinthe as referenced by Kingdom of
+Loathing in reference to Coleridge as referenced by /Citizen Kane/ to which the
+name /Xanadu/ is a reference.
+
+** Planned Features
+
+*** DONE Open-source Xanadoc server
+    CLOSED: [2018-06-05 Tue 04:38]
+
+    Can fetch an EDL from a URL passed as a CGI param. Neat!
+
+*** DONE Multi-format support via Pandoc
+    CLOSED: [2018-06-05 Tue 04:38]
+
+    It's a little touchy sometimes.
+
+*** DONE Inline Xanadoc markup language
+    CLOSED: [2018-06-05 Tue 04:40]
+
+    see [[XanOrg]]
+
+*** DONE Tiling xanadoc viewer
+    CLOSED: [2018-06-05 Tue 04:41]
+
+    TBD: more tiling strategies
+
+*** TODO Self-referential document support
+
+*** TODO Linking & transclusion of other xanadocs
+
+*** TODO Lazy xanadoc compilation
+
+    I.e. Don't fetch sourcedocs until they're needed.
+
+*** TODO N-way links
+
+*** And whatever else comes up...
+
+** Unplanned Features
+
+*** Payment system
+
+    Whatever, I'm broke anyway.
+
+*** Immutable documents
+
+    It's a good idea, but I'd need to turn this CGI server into an HTTP
+    server.
+
+    [[https://ipfs.io][... But take a look at IPFS.]]
+
+*** Semantically-aware span compilation
+
+    I can't imagine any way to make that play nicely with pandoc.
+
+    I've added a regex-match notation for span definition. That's /sort of/ the
+    same thing.
+
+** Format Spec
+
+*** Classic Xanadu
+
+**** EDL
+
+     A Xanadoc is built from an Edit Decision List, or EDL. The EDL is an ordered
+     list of the elements of the xanadoc. EDL files should use the *.edl* file
+     extension by convention.
+
+     Elements of an EDL file may be:
+     - a comment, prefixed with a pound sign (#),
+     - a [[span-element][span element]], indicating a portion of content to include, or
+     - a [[xanalink-element][xanalink element]], indicating a link between sections of content.
+       - xanalinks are also used to indicate certain "meta" properties of elements
+         to the compiler.
+
+***** span element <<span-element>>
+
+      e.g.
+
+      ~span: [sourcedoc_url],[span specifier],[options]~
+
+
+      where
+      - ~[sourcedoc_url]~ is the URL from which content will be read,
+      - ~[span specifier]~ denotes the portion of the content to be used, and is
+        one of the following:
+        - ~start=[a],length=[b]~, where
+          - ~[a]~ is the character offset of the start of the section to use, and
+          - ~[b]~ is the length of the included section, in characters.
+        - ~match=/re/~, where
+          - ~/re/~ is a regular expression which matches the content to use. This
+            regex must be delimited by forward-slashes (/), but slashes in the
+            regex may be escaped. If this regex includes a capture group, text
+            captured by the *first* such group will be used. If there are multiple
+            matches in the sourcedoc, the *last* match will be used.
+      - ~[options]~ are optional, and may optionally be used to set options for
+        the span, such as:
+        - ~inline=[yes | no]~ explicitly specifies whether or not the span should
+          be rendered inline during transclusion. By default, transclusions are
+          rendered inline. This can mess up formatting in certain cases, so this
+          parameter may be used to explicitly disable this behavior.
+
+***** xanalink element <<xanalink-element>>
+
+      e.g.
+
+      ~xanalink: [content_url]~
+
+      where ~[content_url]~ is the URL from which the xanalink is read.
+
+**** Xanalinks
+
+     A xanalink is a file that tells the xanaviewer which sections of content
+     should explicitly be linked. While transclusion links are handled implicitly,
+     xanalinks denote *different* sections of content which should be bridged. Each
+     xanalink is defined in its own file, which uses the *.xanalink* extension by
+     convention.
+
+     Elements of a xanalink file may be:
+     - a comment, prefixed with a pound sign (#),
+     - a key-value pair, where valid keys are [[type-key][type]], [[facet-key][facet]], and [[param-key][param]].
+
+***** type key <<type-key>>
+
+      e.g.
+
+      ~type=[typeless | HideTransclusions | format]~
+
+      where
+      - ~typeless~ indicates the standard xanalink between several faceted [[span-element][spans]],
+      - ~HideTransclusions~ indicates that transclusions in the [[sourcedoc-element][sourcedoc]] facets
+        should *not* be marked up by default, for instance, in the primary text of
+        the xanadoc, and
+      - ~format~ indicates that the faceted [[sourcedoc-element][sourcedocs]] should be formatted with
+        pandoc to the format indicated by the ~format~ [[param-key][param]].
+        - Valid formats are any pandoc input format. See ~man pandoc~ for more info.
+        - Alternatively, passing ~txt~ or a "false" value indicates that the
+          sourcedocs should be formatted as plaintext.
+
+***** facet key <<facet-key>>
+
+      e.g.
+
+      ~facet=[facet_element]~
+
+      where ~[facet_element]~ is the element faceted in the xanalink. Useful facets
+      include [[span-element][spans]] and [[sourcedoc-element][sourcedocs]].
+
+***** param key <<param-key>>
+
+      e.g.
+
+      ~param=[key]: [value]~
+
+      where
+      - ~[key]~ is the parameter key to assign, and
+      - ~[value]~ is the value assigned to it.
+
+***** sourcedoc element <<sourcedoc-element>>
+
+      e.g.
+
+      ~sourcedoc: [content_url]~
+
+      where ~[content_url]~ is the URL of the relevant document
+
+*** XanOrg <<XanOrg>>
+
+    A very new idea. A XanOrg document is nothing more than an [[https://orgmode.org/][org-mode]] document
+    with Xanadu extensions. XanOrg documents compile to xanadocs, just like an
+    EDL. By convention, XanOrg documents use the *.xan.org* file extension.
+
+**** Purpose
+
+     In my own flights through xanaspace, I've found that many of my own xanadocs
+     use a primary "body" document into which other documents are transcluded and
+     xanalinked. The EDL incentivizes true parallelism -- the focus is on the
+     source documents, and the xanadoc serves merely as a window to make sense of
+     the web of interconnection between the data. And that's a good
+     thing. Parallel document structure!
+
+     But the material reality is this: so much of what I, a *very normal person*
+     want from Xanadu is a method of highlighting parallelism in an ultimately
+     logical format. This requires a *root* document, and that is precisely what
+     XanOrg is. Imitating this with an EDL is cumbersome; it produces that
+     pseudo-root "body" document with a few (transclusion here)s sprinkled around.
+     XanOrg is the solution. XanOrg is /really flying up the bridge./
+
+**** Specification
+
+     Two new org-like elements are handled specially by the XanOrg compiler:
+
+***** X!span
+
+#+BEGIN_EXAMPLE
+[[X!span:span_element]]
+#+END_EXAMPLE
+
+    where ~span_element~ is a [[span-element][span element]] URL and parameter string. The entire
+    element will be replaced with the specified transcluded element.
+
+    e.g.
+
+#+BEGIN_EXAMPLE
+To quote myself, [[X!span:docs/quote.txt,start=0,length=51]], which sums it up.
+#+END_EXAMPLE
+
+***** X!link
+
+#+BEGIN_EXAMPLE
+[[X!link:span_element][link_text]]
+#+END_EXAMPLE
+
+    where:
+    - ~span_element~ is a [[span-element][span element]] URL and parameter string, and
+    - ~link_text~ is the local text to be linked.
+
+    e.g.
+
+#+BEGIN_EXAMPLE
+See [[X!span:docs/faq.txt,start=20,length=60][the FAQ]] for more information.
+#+END_EXAMPLE
+
+** Piece Server
+
+   All current Xanadu implementations of which I'm aware, ours included, compile
+   xanadocs /monolithically/: An EDL (or XanOrg) is sent to the server, the server
+   fetches all sourcedocs, compiles one great big xanadoc, and sends absolutely
+   everything back to the viewer in a big response.
+
+   This approach has a few inherent issues. The most obvious is speed. A Xanadoc
+   with a small link to a large document can take a very long time to be
+   compiled. The monolithic approach also constrains document structure. Xanadoc
+   compilation should be agnostic to the "root" document, but this is not
+   natural to monolithic compilation.
+
+   My solution is a piecewise Xanadu model. This requires a new document
+   compilation server, plus a significant offloading of functionality from the
+   compiler to the client.
+
+*** Piecewise Xanadu use case
+
+    A simple description of a use case in the piecewise Xanadu model:
+
+    |  t | Who        | does what:                                           |
+    |----+------------+------------------------------------------------------|
+    |  1 | The user   | inputs an EDL/XanOrg/URL to view                     |
+    |  2 | The client | passes the argument to the server                    |
+    |  3 | The server | parses the argument                                  |
+    |  4 | Server     | returns a /skeleton/ xanadoc                           |
+    |  5 | Client     | renders the response, showing spans as "loading"     |
+    |  5 | Server     | fetches all sourcedocs and caches them locally       |
+    |  6 | Client     | asynchronously requests each span from the server    |
+    |  7 | Server     | gets a requested sourcedoc from the cache            |
+    |  8 | Server     | decorates the doc with [[control-tags][control tags]] around elements |
+    |  9 | Server     | returns the sourcedoc after formatting               |
+    | 10 | Client     | marks up the response sourcedoc                      |
+    | 11 | Client     | renders the transcluded span to the xanadoc          |
+    |  6 | User       | clicks a xanalink to an unloaded sourcedoc           |
+    |  7 | Client     | shows an unloaded document                           |
+    |  8 | Client     | requests the sourcedoc from the server               |
+    |  9 | Server     | gets doc, decorates, formats, returns as before      |
+    | 10 | Client     | marks up, renders as before to the unloaded document |
+
+*** Server interface spec
+
+    Commands to the endpoint have two parameters: ~action~ and an argument.
+
+**** ~action=compile~
+
+     Compile a skeleton xanadoc from the parameter.
+
+***** argument: ~url~ or ~edl~
+
+      If given a ~url~, fetches the URL and builds the skeleton. Alternatively
+      accepts a raw ~edl~ and builds it.
+
+***** response <<compile-response>>
+
+      On success, returns a JSON object:
+
+      - ~array: spans~
+
+        An array of unloaded transcluded spans that will comprise the xanadoc.
+        Each element is a JSON object:
+
+        - ~string: url~
+
+          The URL of the sourcedoc. Will be used to locate the cached sourcedoc
+          contents when requested.
+
+        - ~int: n~
+
+          The index of the span, beginning at 0. Spans will be rendered in this
+          order, ascending.
+
+        - ~int: start~
+
+          The character offset of the start of the transcluded portion of the
+          sourcedoc.
+
+        - ~int: length~
+
+          The number of characters to be transcluded from the sourcedoc.
+
+        - ~bool: inline~
+
+          Should this span be rendered inline or as a block?
+
+        - ~bool: hidden~
+
+          Should this span's transclusion be displayed or hidden?
+
+        - ~string: format~
+
+          The parsed document type of the sourcedoc, for formatting with
+          pandoc.
+
+      - ~array: links~
+
+        An array of parsed xanalinks from the xanadoc.
+        Each element is a JSON object:
+
+        - ~int: n~
+
+          The index of the xanalink, beginning at 0. Unlike with spans, this is
+          used strictly as an ID and has no bearing on rendering.
+
+        - ~array: facets~
+
+          An array of faceted spans included in this link. Each element is a
+          JSON object:
+
+          - ~string: url~
+
+            The URL of the sourcedoc. Will be used to locate the cached
+            sourcedoc contents when requested.
+
+          - ~int: start~
+
+            The character offset of the start of the linked portion of the
+            sourcedoc.
+
+          - ~int: length~
+
+            The number of characters to be linked in the sourcedoc.
+
+**** ~action=fulfill~
+
+     Retrieve the contents of the requested document, decorate with [[control-tags][control tags]]
+     for xanadu elements, and format with ~pandoc~.
+
+***** argument: ~sourcedoc~
+
+      A JSON object:
+
+      - ~string: url~
+
+        The URL used the identify the sourcedoc. This should be a URL taken
+        from the [[compile-response][response from `compile`]], since this will be used to retrieve
+        the document from the cache.
+
+      - ~array: includes~
+
+        A list of xanadu elements which include this sourcedoc. The document
+        will be decorated with [[control-tags][control tags]] for each of these. Each element is
+        a JSON object:
+
+        - ~string: type~
+
+          The type of the included element, either ~span~ or ~link~.
+
+        - ~int: n~
+
+          The index of the element, which has client semantics.
+
+        - ~int: start~
+
+          The character offset of the start of the included portion of the
+          sourcedoc.
+
+        - ~int: length~
+
+          The number of characters included by this element.
+
+***** response
+
+      On success, returns a JSON object (for uniformity):
+
+      - ~string: contents~
+
+        The full contents of the requested sourcedoc, with xanadu elements
+        decorated using [[control-tags][control tags]].
+
+**** Control tags <<control-tags>>
+
+     In Xanadu mark-up, the offsets of spans are given using plaintext character
+     offsets. This obviously doesn't play nice with document formatting, so
+     sourcedocs must be annotated with /control tags/ before formatting which can
+     be /dereferenced/ later into their appropriate elements.
+
+     There are a few constraints to be mindful of in selecting a good control
+     sequence. A "good" control sequence...
+
+     - ... must be encodable in the JSON response from the web server to the
+       client
+     - ... must be able to hold semantics for the client and server --- namely,
+       the element's type and index.
+     - ... must not have semantics for any concievable mark-up format we wish to
+       support (otherwise, it'll be mangled by ~pandoc~)
+     - ... cannot plausibly appear in the contents of any sourcedoc.
+
+     To that end, I'm proposing the following control sequence:
+
+#+BEGIN_EXAMPLE
+     \x{1f}[type];[n];[tag]\x{1f}
+#+END_EXAMPLE
+
+     where:
+
+     - ~\x{1f}~ is the [[https://en.wikipedia.org/wiki/C0_and_C1_control_codes#C0_(ASCII_and_derivatives)][C0 Unit Separator]] control character,
+     - ~[type]~ is the element type, either ~S~ for span or ~L~ for link,
+     - ~[n]~ is the element index, an integer, and
+     - ~[tag]~ is the tag type, either ~O~ for open or ~C~ for close.

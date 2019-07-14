@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="img/FlamingX.png" />
+<title>xanaviewer3</title>
+
+<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="static/css/style.css">
+
+<style>
+.span:hover { background: yellow; }
+</style>
+
+</head>
+
+<body>
+
+
+<script id="document-template" type="text/x-handlebars-template">
+    <div class="document {{ doctype }}" id="doc{{ docid }}">
+        <div class="heading" id="head{{ docid }}">{{ heading }}</div>
+        <div class="wrapper">
+            <div class="body" id="body{{ docid }}">
+                {{{ text }}}
+            </div>
+        </div>
+    </div>
+</script>
+<script id="alert-template" type="text/x-handlebars-template">
+    <div class="list-group-item list-group-item-{{level}} alert alert-dismissable alert-{{level}}" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    {{{ text }}}
+    </div>
+</script>
+
+
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;<span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Pay for content?</h4>
+      </div>
+      <div class="modal-body">The price for this content is <span id="price"></span> nanobucks. (150,000 nanobucks per character)</div>
+      <div class="modal-footer">
+        <a href="#" id="modalPayButton" class="btn btn-primary">Pay to view content</a>
+        <button type="button" class="btn btn-default" data-dismiss="modal">cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<svg id="svg" class="tile-fg" version="1.2" xmlns="http://www.w3.org/2000/svg"></svg>
+<div id="top">
+
+    <div id="edlform">
+        <div class="heading" id="heading1">EDL</div>
+        <div class="body" id="body1">
+
+        <p>
+            <textarea id="edl" name="edl" rows="4" cols="60"></textarea><br>
+            <button id="fulfil" class="btn btn-primary"/>fulfil document</button>
+            <button id="clear" class="btn btn-danger"/>clear EDL</button>
+        </p>
+        </div>
+    </div>
+
+</div>
+<div id="alerts" class="list-group"></div>
+<div id="tiling"></div>
+<div id="tile-strat-ctl" class="btn btn-primary tile-fg"></div>
+
+<script>
+var fulfil_edl_path = "cgi-bin/server.cgi";
+var get_span_path = "get_span.json";
+</script>
+
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/interactjs/dist/interact.min.js"></script>
+<script src="static/js/app.js"></script>
+<script src="static/js/tile.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="bower_components/handlebars/handlebars.runtime.min.js"></script>
+
+<script>
+var edlform = document.getElementById('edlform');
+
+interact('#edlform')
+    .draggable({
+        onmove: dragMoveListener,
+    })
+    .on('resizemove', resizemove)
+    .actionChecker(function (pointer, event, action, interactable, element, interaction) {
+        if (!interact.matchesSelector(event.target, '.heading') && action.name == 'drag') {
+            return;
+        }
+        return action;
+    });
+
+
+$("button#fulfil").click(function(event) {
+    event.preventDefault();
+    fulfil({'edl': $('#edl').val()});
+});
+
+$("button#clear").click(function(event) {
+    $("#edl").val("");
+    reset();
+});
+</script>
+
+
+</body>
+</html>
