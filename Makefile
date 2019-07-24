@@ -1,18 +1,15 @@
 all: client server
 
 client:
-	mkdir deploy
-	cd xanadown-client
-	yarn build
-	mv build ../deploy
-	cd ..
+	mkdir -p deploy
+	cd xanadown-client; yarn build
+	mv xanadown-client/build deploy/static
 
 server:
-	mkdir deploy
-	cd xanadown-server
-	go build
-	mv xanadown-server ../deploy
-	cd ..
+	mkdir -p deploy
+	cd xanadown-server; go build
+	mv xanadown-server/xanadown-server deploy/
+	mkdir -p deploy/docs
 
 clean:
 	rm -rf deploy/
