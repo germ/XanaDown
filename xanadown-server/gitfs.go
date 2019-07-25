@@ -1,15 +1,15 @@
 package main
 
 // TODO: Full Go impl, this is cancer
-
 import (
 	"errors"
 	"fmt"
+	"github.com/udhos/equalfile"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -21,80 +21,71 @@ type DocReq struct {
 	Url       string
 }
 
+// Git infomation
+type gitInfo struct {
+	remote   string
+	fullPath string
+	basePath string
+	filePath string
+	fileName string
+}
+
 // Parse a path to retr a doc
 func GetDocument(path string) (Req DocReq, err error) {
 	Req.Url = path
 
 	// Verify that repo is mounted
-	err = gitMount(path)
+	info, err := gitMount(path)
+	fmt.Println("Got info: ", info)
 	if err != nil {
 		return Req, fmt.Errorf("Error getting document: %v", err)
 	}
 
 	// Create a FS path from loc
 	// Verify that it exists
-	wd, _ := os.Getwd()
-	reqLoc := wd + "/docs/" + path
-	reqInfo, err := os.Stat(reqLoc)
+	_, err = os.Stat(info.fullPath)
 	if err != nil {
 		return Req, fmt.Errorf("Error getting document: %v", err)
 	}
 
-	// Check for latest rev
-	if strings.Contains(reqLoc, ".git/current/") {
-		Req.IsLatest = true
-		Req.LatestUrl = path
-	} else {
-		// Find mod time from current commit, compare to request
-		// Find the current Filename
-		fmt.Println(reqLoc)
-		sepPath := strings.Split(reqLoc, "/")
-		for i, v := range sepPath {
-			if v == "history" {
-				if i+3 > len(sepPath) {
-					return Req, errors.New("Malformed URL, Please try again.")
-				}
-				sepPath[i] = "current"
-				sepPath = append(sepPath[:i+1], sepPath[i+3:]...)
-				fmt.Println(sepPath)
-				break
-			}
-			if i == len(sepPath) {
-				return Req, errors.New("Malformed URL, Please try again.")
-			}
-		}
-		curLoc := filepath.Join(sepPath...)
-
-		fmt.Println("CurLoc", curLoc)
-		fmt.Println("ReqLoc", reqLoc)
-		//Compare modtimes
-		curInfo, err := os.Stat(curLoc)
-		if err != nil {
-			panic(err)
-		}
-		if curInfo.ModTime().Equal(reqInfo.ModTime()) {
-			Req.IsLatest = true
-			Req.LatestUrl = path
-		} else {
-			Req.IsLatest = false
-			Req.LatestUrl = strings.Split(curLoc, wd)[0]
-		}
+	// Read doc in
+	rawDoc, err := ioutil.ReadFile(info.fullPath)
+	if err != nil {
+		return Req, fmt.Errorf("Could not read file: %v", err)
 	}
+	Req.Doc = string(rawDoc)
 
+	// Check for latest rev
+	// Find path for current version
+	curLoc := info.basePath + "/history/"
+	curDate, err := getNewest(curLoc)
+	curTime, err := getNewest(curLoc + curDate)
+	curLoc = curLoc + curDate + "/" + curTime + info.filePath
+
+	//Deep compare
+	cmp := equalfile.New(nil, equalfile.Options{})
+	Req.IsLatest, _ = cmp.CompareFile(info.fullPath, curLoc)
+
+	// Point to newer resource
+	Req.LatestUrl = info.remote + "/history/" + curDate + "/" + curTime + "/" + info.fileName
 	return
 }
 
 // Unmount all fuse drives
 // They will be remounted as needed
 func gitUnmount() (err error) {
-	return exec.Command("mount -l | grep fuse.gitfs | cut -d ' ' -f 3").Run()
+	return exec.Command("mount -l | grep fuse.gitfs | cut -d ' ' -f 3 | xargs fusermount -u").Run()
 }
 
 // Mount a given http git repo for access
-func gitMount(u string) (err error) {
+// Returns the path to on-disk resource and any errors
+// encountered
+//func gitMount(u string) (localPath string, gitPath string, err error) {
+func gitMount(u string) (info gitInfo, err error) {
+	// TODO: Handle being passed non-historical urls
 	// Simple case
 	if u == "" {
-		return errors.New("No repo specified")
+		return info, errors.New("No repo specified")
 	}
 
 	// Try to parse
@@ -107,19 +98,29 @@ func gitMount(u string) (err error) {
 	// Convert to FS path
 	parts := strings.SplitAfter(loc.String(), ".git")
 	if len(parts) != 2 {
-		return errors.New("Error parsing location")
+		return info, errors.New("Error parsing location")
 	}
 
 	// Strip off the schema
 	// Yes I know we already did some parsing and bullshit
 	wd, _ := os.Getwd()
-	gitRoot, _ := url.Parse(parts[0])
-	gitPath := wd + "/doc/" + gitRoot.Host + gitRoot.Path
-	fmt.Printf("Converted %v to %v\n", u, gitRoot)
+	gitBase, _ := url.Parse(parts[0])
+	gitPath := wd + "/doc/" + gitBase.Host + gitBase.Path
+	fmt.Printf("Converted %v to %v\n", u, gitBase)
 
 	// It's sanitized but you never know
-	if strings.Contains(gitPath, "../") || strings.Contains(gitRoot.String(), "../") {
-		return errors.New("Can you fucking not?")
+	if strings.Contains(gitPath, "../") || strings.Contains(gitBase.String(), "../") {
+		return info, errors.New("Can you fucking not?")
+	}
+
+	// Update return struct
+	info.remote = gitBase.String()
+	info.basePath = gitPath
+	info.filePath = parts[1]
+	info.fullPath = info.basePath + info.filePath
+
+	if strings.Contains(info.filePath, "/history/") {
+		info.fileName = strings.Join(strings.Split(info.filePath, "/")[4:], "/")
 	}
 
 	// Check if already mounted
@@ -130,13 +131,33 @@ func gitMount(u string) (err error) {
 
 	// Make directory and mount
 	os.MkdirAll(gitPath, 0755)
-	c := exec.Command("gitfs", gitRoot.String(), gitPath)
-	fmt.Printf("Mounting %v to %v\n", gitRoot.String(), gitPath)
+	c := exec.Command("gitfs", gitBase.String(), gitPath)
+	fmt.Printf("Mounting %v to %v\n", gitBase.String(), gitPath)
 
 	out, err := c.Output()
 	if err != nil {
-		fmt.Printf("Error Mounting %v to %v: %v\n", gitRoot, gitPath, out)
+		fmt.Printf("Error Mounting %v to %v: %v\n", gitBase, gitPath, out)
 	}
 
-	return err
+	return
+}
+
+// Take a directory and return the newest by mod time
+func getNewest(path string) (newest string, err error) {
+	files, err := ioutil.ReadDir(path)
+	fmt.Println("Finding Newest: ", path)
+	if len(files) == 0 {
+		err = fmt.Errorf("No Files")
+	}
+	if err != nil {
+		return
+	}
+
+	// Sort by mod time
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].ModTime().Before(files[j].ModTime())
+	})
+
+	// string base path
+	return files[0].Name(), err
 }

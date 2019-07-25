@@ -17,7 +17,8 @@ class XanaDoc extends React.Component {
 	componentDidMount() {
 		//  Load the data from the server
 		//  TODO: Fetch based off prop
-		fetch(ApiConfig.Endpoint)
+		console.log(ApiConfig.Endpoint)
+		fetch(ApiConfig.Endpoint+"?loc="+this.props.path )
 			.then(response => response.json())
 			.then(data => this.setState({raw: data.Doc}));
 	}

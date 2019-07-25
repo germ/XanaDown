@@ -25,7 +25,6 @@ type RequestStatus struct {
 func init() {
 	// Register API Endpoint
 	http.HandleFunc("/doc", serveDocument)
-	http.HandleFunc("/add", addRepo)
 	http.Handle("/",
 		http.FileServer(http.Dir("./static/")))
 
@@ -49,6 +48,7 @@ func main() {
 
 // Api Endpoints
 func serveDocument(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("New Request: ", r.URL)
 	// Cors jazz
 	w.Header().Set("Content-Type", "text/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -68,19 +68,4 @@ func serveDocument(w http.ResponseWriter, r *http.Request) {
 
 	rawResp, err := json.Marshal(&req)
 	fmt.Fprintln(w, string(rawResp))
-}
-func addRepo(w http.ResponseWriter, r *http.Request) {
-	// Try to process
-	err := gitMount(r.FormValue("remote"))
-	if err != nil {
-		res, _ := json.Marshal(&RequestStatus{
-			Error: err.Error(),
-			Code:  http.StatusBadRequest,
-		})
-		fmt.Fprintf(w, string(res))
-		return
-	}
-
-	res, _ := json.Marshal(&RequestStatus{Code: 200})
-	fmt.Fprintln(w, string(res))
 }
