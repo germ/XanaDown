@@ -33,7 +33,10 @@ func init() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		gitUnmount()
+		fmt.Println("Unmounting all repos")
+		if err := gitUnmount(); err != nil {
+			fmt.Println(err)
+		}
 		os.Exit(1)
 	}()
 

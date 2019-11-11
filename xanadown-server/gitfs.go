@@ -4,13 +4,14 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/udhos/equalfile"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
 	"sort"
 	"strings"
+
+	"github.com/udhos/equalfile"
 )
 
 // Document JSON structure
@@ -74,7 +75,12 @@ func GetDocument(path string) (Req DocReq, err error) {
 // Unmount all fuse drives
 // They will be remounted as needed
 func gitUnmount() (err error) {
-	return exec.Command("mount -l | grep fuse.gitfs | cut -d ' ' -f 3 | xargs fusermount -u").Run()
+	out, err := exec.Command("bash", "-c", "mount -l | grep fuse.gitfs | cut -d ' ' -f 3 | xargs -n 1 fusermount -u").Output()
+	if len(out) != 0 {
+		fmt.Println(out)
+	}
+
+	return err
 }
 
 // Mount a given http git repo for access
@@ -131,7 +137,7 @@ func gitMount(u string) (info gitInfo, err error) {
 
 	// Make directory and mount
 	os.MkdirAll(gitPath, 0755)
-	c := exec.Command("gitfs", gitBase.String(), gitPath)
+	c := exec.Command("gitfs", gitBase.String(), "-o idle_fetch_timeout=5,min_idle_times=200", gitPath)
 	fmt.Printf("Mounting %v to %v\n", gitBase.String(), gitPath)
 
 	out, err := c.Output()
