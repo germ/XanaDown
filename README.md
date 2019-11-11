@@ -26,6 +26,6 @@ for example germ/x is mounted at docs/github.com/germ/x
 - Add configuration for default to render and provide a editor page
 - Last access time for pruning of unused docs
 
-This is a rework of [wormwood](gitlab.com/krampus/wormwood) with the goal of simplifying many aspects and providing a working implementation.
+This is a rework of [wormwood](gitlab.com/krampus/wormwood) with the goal of simplifying many aspects and providing a working implementation. As such, the 'XanaDown' folder is provided for reference until a working prototype is complete
 
 Shout out to Ted, you crazy bastard.
