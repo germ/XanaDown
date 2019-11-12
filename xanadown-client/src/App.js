@@ -1,14 +1,13 @@
-import React from 'react';
-import { Mosaic, MosaicWindow, ReplaceButton, ExpandButton, RemoveButton } 
-    from 'react-mosaic-component';
-import ConnectElements from 'react-connect-elements';
-import { XanaDoc } from './XanaDoc';
-import  Url  from 'url-parse';
+import ConnectElements from 'react-connect-elements'
+import Url  from 'url-parse'
+import React from 'react'
+import { XanaDoc } from './XanaDoc'
+import { SpanButton, SourceButton} from './ToolbarButtons.js'
+import { 
+  Mosaic, MosaicWindow, createDefaultToolbarButton,
+  ReplaceButton, ExpandButton, RemoveButton
+} from 'react-mosaic-component'
 
-import '@blueprintjs/core/lib/css/blueprint.css';
-import '@blueprintjs/icons/lib/css/blueprint-icons.css';
-import "../node_modules/react-mosaic-component/react-mosaic-component.css";
-import './App.css';
 
 const ViewId = 'a' | 'b' | 'c' | 'new';
 const TITLE_MAP: Record<ViewId, string> = {
@@ -70,7 +69,7 @@ class App extends React.Component {
             reateNode={() => 'new'} 
             title={Url(TITLE_MAP[id]).pathname.split('/').pop()}
             toolbarControls={React.Children.toArray([
-            <ReplaceButton/>,<ExpandButton/>, <RemoveButton/>
+            <SpanButton/>,<SourceButton src={TITLE_MAP[id]}/>,<ExpandButton/>,<RemoveButton/>
           ])}
           >
             <div className={id}>

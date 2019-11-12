@@ -20,6 +20,7 @@ type DocReq struct {
 	IsLatest  bool
 	LatestUrl string
 	Url       string
+	Src       string
 }
 
 // Git infomation
@@ -33,13 +34,28 @@ type gitInfo struct {
 
 // Parse a path to retr a doc
 func GetDocument(path string) (Req DocReq, err error) {
-	Req.Url = path
-
 	// Verify that repo is mounted
 	info, err := gitMount(path)
 	fmt.Println("Got info: ", info)
 	if err != nil {
 		return Req, fmt.Errorf("Error getting document: %v", err)
+	}
+
+	// Clean up URL
+	Req.Url = strings.Replace(path, info.remote, "", -1)
+
+	// Set src document link
+	// Todo: Verify this works places that aren't github
+	if strings.HasPrefix(Req.Url, "/history/") {
+		parts := strings.Split(Req.Url, "/")
+		var commitID string
+		if len(parts) > 3 {
+			commitID = parts[3]
+			commitID = commitID[9:]
+			Req.Src = info.remote + "/tree/" + commitID + strings.Join(parts[4:], "/")
+		}
+	} else if strings.HasPrefix(Req.Url, "/current/") {
+		Req.Src = info.remote + "/" + strings.TrimPrefix(Req.Url, "/current/")
 	}
 
 	// Create a FS path from loc
@@ -61,14 +77,19 @@ func GetDocument(path string) (Req DocReq, err error) {
 	curLoc := info.basePath + "/history/"
 	curDate, err := getNewest(curLoc)
 	curTime, err := getNewest(curLoc + curDate)
-	curLoc = curLoc + curDate + "/" + curTime + info.filePath
+	curLoc = curLoc + curDate + "/" + curTime + info.fileName
 
 	//Deep compare
 	cmp := equalfile.New(nil, equalfile.Options{})
-	Req.IsLatest, _ = cmp.CompareFile(info.fullPath, curLoc)
+	Req.IsLatest, err = cmp.CompareFile(info.fullPath, curLoc)
+	if err != nil {
+		fmt.Println("YYYEEEE")
+		fmt.Println(info.fullPath)
+		fmt.Println(curLoc)
+	}
 
 	// Point to newer resource
-	Req.LatestUrl = info.remote + "/history/" + curDate + "/" + curTime + "/" + info.fileName
+	Req.LatestUrl = "/history/" + curDate + "/" + curTime + "/" + info.fileName
 	return
 }
 
@@ -127,6 +148,8 @@ func gitMount(u string) (info gitInfo, err error) {
 
 	if strings.Contains(info.filePath, "/history/") {
 		info.fileName = strings.Join(strings.Split(info.filePath, "/")[4:], "/")
+	} else {
+		info.fileName = strings.Join(strings.Split(info.filePath, "/")[2:], "/")
 	}
 
 	// Check if already mounted

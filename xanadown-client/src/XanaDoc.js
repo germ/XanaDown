@@ -24,6 +24,7 @@ class XanaDoc extends React.Component {
 		fetch(ApiConfig.Endpoint+"?loc="+this.props.path )
 			.then(response => response.json())
 			.then(data => {
+        console.log(data)
         this.setState({
           url: this.props.path,
           raw: data.Doc,
