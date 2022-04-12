@@ -15,7 +15,7 @@
     "react-scripts": "3.0.1",
     "react-spinners": "^0.5.8",
     "unified": "^8.4.2",
-    "urijs": "^1.19.1",
+    "urijs": "^1.19.11",
     "url-parse": "^1.4.7"
   },
   "scripts": {
